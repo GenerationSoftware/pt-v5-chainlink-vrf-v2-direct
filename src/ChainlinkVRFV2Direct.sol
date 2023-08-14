@@ -2,7 +2,7 @@
 pragma solidity 0.8.19;
 
 import { VRFV2WrapperConsumerBase } from "chainlink/vrf/VRFV2WrapperConsumerBase.sol";
-import { Ownable } from "openzeppelin/access/Ownable.sol";
+import { Ownable } from "owner-manager/Ownable.sol";
 
 import { VRFV2WrapperInterface } from "chainlink/interfaces/VRFV2WrapperInterface.sol";
 import { LinkTokenInterface } from "chainlink/interfaces/LinkTokenInterface.sol";
@@ -76,7 +76,7 @@ contract ChainlinkVRFV2Direct is VRFV2WrapperConsumerBase, Ownable, RNGInterface
     VRFV2WrapperInterface _vrfV2Wrapper,
     uint32 callbackGasLimit_,
     uint16 requestConfirmations_
-  ) VRFV2WrapperConsumerBase(address(_linkToken), address(_vrfV2Wrapper)) Ownable() {
+  ) VRFV2WrapperConsumerBase(address(_linkToken), address(_vrfV2Wrapper)) Ownable(_owner) {
     if (address(_linkToken) == address(0)) revert LinkTokenZeroAddress();
     if (address(_vrfV2Wrapper) == address(0)) revert VRFV2WrapperZeroAddress();
     _setCallbackGasLimit(callbackGasLimit_);
