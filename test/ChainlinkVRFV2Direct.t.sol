@@ -5,6 +5,8 @@ import "forge-std/Test.sol";
 import { console2 } from "forge-std/console2.sol";
 
 import { ChainlinkVRFV2Direct } from "../src/ChainlinkVRFV2Direct.sol";
+import { VRFV2WrapperInterface } from "chainlink/interfaces/VRFV2WrapperInterface.sol";
+import { LinkTokenInterface } from "chainlink/interfaces/LinkTokenInterface.sol";
 
 interface IERC20 {
   function balanceOf(address account) external view returns (uint256);
@@ -13,7 +15,7 @@ interface IERC20 {
 contract ChainlinkVRFV2DirectTest is Test {
   // uint256 public mainnetFork;
 
-  ChainlinkVRFV2Direct public fooContract = new ChainlinkVRFV2Direct();
+  ChainlinkVRFV2Direct public fooContract = new ChainlinkVRFV2Direct(LinkTokenInterface(address(0)), VRFV2WrapperInterface(address(0)), 1_000_000, 3);
 
   // function setUp() public {
   //   mainnetFork = vm.createFork(vm.rpcUrl("mainnet"), 16_428_000);

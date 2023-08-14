@@ -4,8 +4,9 @@ pragma solidity 0.8.19;
 import { VRFV2WrapperConsumerBase } from "chainlink/vrf/VRFV2WrapperConsumerBase.sol";
 import { VRFV2WrapperInterface } from "chainlink/interfaces/VRFV2WrapperInterface.sol";
 import { LinkTokenInterface } from "chainlink/interfaces/LinkTokenInterface.sol";
+import { RNGInterface } from "rng-contracts/RNGInterface.sol";
 
-contract ChainlinkVRFV2Direct is VRFV2WrapperConsumerBase {
+contract ChainlinkVRFV2Direct is VRFV2WrapperConsumerBase, RNGInterface {
 
   /* ============ Global Variables ============ */
 
@@ -53,9 +54,9 @@ contract ChainlinkVRFV2Direct is VRFV2WrapperConsumerBase {
   /// @param callbackGasLimit The new callback gas limit
   event SetCallbackGasLimit(uint32 callbackGasLimit);
 
-  /// @notice Emitted when the callback gas limit is set
-  /// @param callbackGasLimit The new callback gas limit
-  event SetCallbackGasLimit(uint32 callbackGasLimit);
+  /// @notice Emitted when the number of request confirmations is set.
+  /// @param requestConfirmations The new request confirmations
+  event SetRequestConfirmations(uint16 requestConfirmations);
 
   /* ============ Constructor ============ */
 
@@ -137,7 +138,7 @@ contract ChainlinkVRFV2Direct is VRFV2WrapperConsumerBase {
 
   /// @inheritdoc RNGInterface
   function getRequestFee() external view override returns (address feeToken, uint256 requestFee) {
-    return (address(LINK), calculateRequestPrice(_callbackGasLimit));
+    return (address(LINK), VRF_V2_WRAPPER.calculateRequestPrice(_callbackGasLimit));
   }
 
   /* ============ External Setters ============ */
@@ -177,11 +178,13 @@ contract ChainlinkVRFV2Direct is VRFV2WrapperConsumerBase {
   function _setCallbackGasLimit(uint32 callbackGasLimit_) internal {
     if (callbackGasLimit_ == 0) revert CallbackGasLimitZero();
     _callbackGasLimit = callbackGasLimit_;
+    emit SetCallbackGasLimit(_callbackGasLimit);
   }
 
   function _setRequestConfirmations(uint16 requestConfirmations_) internal {
     if (requestConfirmations_ == 0) revert RequestConfirmationsZero();
     _requestConfirmations = requestConfirmations_;
+    emit SetRequestConfirmations(_requestConfirmations);
   }
 
 }
