@@ -2,11 +2,13 @@
 pragma solidity 0.8.19;
 
 import { VRFV2WrapperConsumerBase } from "chainlink/vrf/VRFV2WrapperConsumerBase.sol";
+import { Ownable } from "openzeppelin/access/Ownable.sol";
+
 import { VRFV2WrapperInterface } from "chainlink/interfaces/VRFV2WrapperInterface.sol";
 import { LinkTokenInterface } from "chainlink/interfaces/LinkTokenInterface.sol";
 import { RNGInterface } from "rng-contracts/RNGInterface.sol";
 
-contract ChainlinkVRFV2Direct is VRFV2WrapperConsumerBase, RNGInterface {
+contract ChainlinkVRFV2Direct is VRFV2WrapperConsumerBase, Ownable, RNGInterface {
 
   /* ============ Global Variables ============ */
 
@@ -62,17 +64,19 @@ contract ChainlinkVRFV2Direct is VRFV2WrapperConsumerBase, RNGInterface {
 
   /**
    * @notice Constructor of the contract
+   * @param _owner Address of the contract owner
    * @param _linkToken Address of the LINK token contract
    * @param _vrfV2Wrapper Address of the VRF V2 Wrapper
    * @param callbackGasLimit_ Gas limit for the fulfillRandomWords callback
    * @param requestConfirmations_ The number of confirmations to wait before fulfilling the request
    */
   constructor(
+    address _owner,
     LinkTokenInterface _linkToken,
     VRFV2WrapperInterface _vrfV2Wrapper,
     uint32 callbackGasLimit_,
     uint16 requestConfirmations_
-  ) VRFV2WrapperConsumerBase(address(_linkToken), address(_vrfV2Wrapper)) {
+  ) VRFV2WrapperConsumerBase(address(_linkToken), address(_vrfV2Wrapper)) Ownable() {
     if (address(_linkToken) == address(0)) revert LinkTokenZeroAddress();
     if (address(_vrfV2Wrapper) == address(0)) revert VRFV2WrapperZeroAddress();
     _setCallbackGasLimit(callbackGasLimit_);
@@ -143,11 +147,11 @@ contract ChainlinkVRFV2Direct is VRFV2WrapperConsumerBase, RNGInterface {
 
   /* ============ External Setters ============ */
 
-  function setCallbackGasLimit(uint32 callbackGasLimit_) external { // TODO: add onlyOwner
+  function setCallbackGasLimit(uint32 callbackGasLimit_) external onlyOwner {
     _setCallbackGasLimit(callbackGasLimit_);
   }
 
-  function setRequestConfirmations(uint16 requestConfirmations_) external { // TODO: add onlyOwner
+  function setRequestConfirmations(uint16 requestConfirmations_) external onlyOwner {
     _setRequestConfirmations(requestConfirmations_);
   }
 

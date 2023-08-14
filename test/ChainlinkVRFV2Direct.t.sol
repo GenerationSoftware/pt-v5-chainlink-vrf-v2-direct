@@ -15,7 +15,7 @@ interface IERC20 {
 contract ChainlinkVRFV2DirectTest is Test {
   // uint256 public mainnetFork;
 
-  ChainlinkVRFV2Direct public fooContract = new ChainlinkVRFV2Direct(LinkTokenInterface(address(0)), VRFV2WrapperInterface(address(0)), 1_000_000, 3);
+  ChainlinkVRFV2Direct public fooContract = new ChainlinkVRFV2Direct(address(0), LinkTokenInterface(address(0)), VRFV2WrapperInterface(address(0)), 1_000_000, 3);
 
   // function setUp() public {
   //   mainnetFork = vm.createFork(vm.rpcUrl("mainnet"), 16_428_000);
