@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
+pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
 
@@ -29,6 +29,7 @@ contract ChainlinkVRFV2DirectTest is Test {
   error RequestConfirmationsZero();
 
   /// @notice Thrown when the chainlink VRF request ID does not match any stored request IDs.
+  /// @param vrfRequestId The chainlink ID for the VRF Request
   error InvalidVrfRequestId(uint256 vrfRequestId);
 
   /* ============ Global Variables ============ */

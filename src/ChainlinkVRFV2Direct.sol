@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
+pragma solidity ^0.8.19;
 
 import { VRFV2WrapperConsumerBase } from "chainlink/vrf/VRFV2WrapperConsumerBase.sol";
 import { Ownable } from "owner-manager/Ownable.sol";
@@ -45,6 +45,7 @@ contract ChainlinkVRFV2Direct is VRFV2WrapperConsumerBase, Ownable, RNGInterface
   error RequestConfirmationsZero();
 
   /// @notice Thrown when the chainlink VRF request ID does not match any stored request IDs.
+  /// @param vrfRequestId The chainlink ID for the VRF Request
   error InvalidVrfRequestId(uint256 vrfRequestId);
 
   /* ============ Custom Events ============ */
