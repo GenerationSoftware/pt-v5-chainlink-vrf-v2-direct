@@ -25,10 +25,10 @@ contract ChainlinkVRFV2Direct is VRFV2WrapperConsumerBase, Ownable, RNGInterface
   mapping(uint32 => uint256) internal _randomNumbers;
 
   /// @notice A list of random number completion timestamps mapped by request id
-  mapping(uint32 => uint64) internal requestCompletedAt;
+  mapping(uint32 => uint64) internal _requestCompletedAt;
 
   /// @notice A mapping from Chainlink request ids to internal request ids
-  mapping(uint256 => uint32) internal chainlinkRequestIds;
+  mapping(uint256 => uint32) internal _chainlinkRequestIds;
 
   /* ============ Custom Errors ============ */
 
@@ -96,7 +96,7 @@ contract ChainlinkVRFV2Direct is VRFV2WrapperConsumerBase, Ownable, RNGInterface
     _requestCounter = _requestCounter + 1;
 
     requestId = _requestCounter;
-    chainlinkRequestIds[_vrfRequestId] = _requestCounter;
+    _chainlinkRequestIds[_vrfRequestId] = _requestCounter;
 
     lockBlock = uint32(block.number + _requestConfirmations);
 
@@ -128,7 +128,7 @@ contract ChainlinkVRFV2Direct is VRFV2WrapperConsumerBase, Ownable, RNGInterface
    * @dev Returns zero if not completed or if the request doesn't exist
    */
   function completedAt(uint32 requestId) external view override returns (uint64 completedAtTimestamp) {
-    return requestCompletedAt[requestId];
+    return _requestCompletedAt[requestId];
   }
 
   /// @inheritdoc RNGInterface
@@ -163,12 +163,12 @@ contract ChainlinkVRFV2Direct is VRFV2WrapperConsumerBase, Ownable, RNGInterface
     internal
     override
   {
-    uint32 _internalRequestId = chainlinkRequestIds[_vrfRequestId];
+    uint32 _internalRequestId = _chainlinkRequestIds[_vrfRequestId];
     if (_internalRequestId == 0) revert InvalidVrfRequestId(_vrfRequestId);
 
     uint256 _randomNumber = _randomWords[0];
     _randomNumbers[_internalRequestId] = _randomNumber;
-    requestCompletedAt[_internalRequestId] = uint64(block.timestamp);
+    _requestCompletedAt[_internalRequestId] = uint64(block.timestamp);
 
     emit RandomNumberCompleted(_internalRequestId, _randomNumber);
   }
