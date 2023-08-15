@@ -27,9 +27,6 @@ contract ChainlinkVRFV2Direct is VRFV2WrapperConsumerBase, Ownable, RNGInterface
   /// @notice A list of random number completion timestamps mapped by request id
   mapping(uint32 => uint64) internal requestCompletedAt;
 
-  /// @notice A list of blocks to be locked at based on past requests mapped by request id
-  mapping(uint32 => uint32) internal requestLockBlock;
-
   /// @notice A mapping from Chainlink request ids to internal request ids
   mapping(uint256 => uint32) internal chainlinkRequestIds;
 
@@ -101,8 +98,7 @@ contract ChainlinkVRFV2Direct is VRFV2WrapperConsumerBase, Ownable, RNGInterface
     requestId = _requestCounter;
     chainlinkRequestIds[_vrfRequestId] = _requestCounter;
 
-    lockBlock = uint32(block.number);
-    requestLockBlock[_requestCounter] = lockBlock;
+    lockBlock = uint32(block.number + _requestConfirmations);
 
     emit RandomNumberRequested(_requestCounter, msg.sender);
   }
