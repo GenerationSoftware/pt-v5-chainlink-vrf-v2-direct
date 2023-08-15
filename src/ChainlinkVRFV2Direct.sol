@@ -18,7 +18,7 @@ contract ChainlinkVRFV2Direct is VRFV2WrapperConsumerBase, Ownable, RNGInterface
   /// @notice The callback gas limit
   uint32 internal _callbackGasLimit;
 
-  /// @notice The number of blocks to wait before the request starts generating randomness
+  /// @notice The number of confirmations to wait before fulfilling the request
   uint16 internal _requestConfirmations;
 
   /// @notice A list of random numbers from past requests mapped by request id
@@ -98,7 +98,7 @@ contract ChainlinkVRFV2Direct is VRFV2WrapperConsumerBase, Ownable, RNGInterface
     requestId = _requestCounter;
     _chainlinkRequestIds[_vrfRequestId] = _requestCounter;
 
-    lockBlock = uint32(block.number + _requestConfirmations);
+    lockBlock = uint32(block.number);
 
     emit RandomNumberRequested(_requestCounter, msg.sender);
   }
@@ -141,12 +141,28 @@ contract ChainlinkVRFV2Direct is VRFV2WrapperConsumerBase, Ownable, RNGInterface
     return (address(LINK), VRF_V2_WRAPPER.calculateRequestPrice(_callbackGasLimit));
   }
 
+  /// @notice Returns the current callback gas limit.
+  /// @return The current callback gas limit
+  function getCallbackGasLimit() external view returns (uint32) {
+    return _callbackGasLimit;
+  }
+
+  /// @notice Returns the current request confirmation count.
+  /// @return The current request confirmation count
+  function getRequestConfirmations() external view returns (uint16) {
+    return _requestConfirmations;
+  }
+
   /* ============ External Setters ============ */
 
+  /// @notice Sets a new callback gat limit.
+  /// @param callbackGasLimit_ The new callback gat limit
   function setCallbackGasLimit(uint32 callbackGasLimit_) external onlyOwner {
     _setCallbackGasLimit(callbackGasLimit_);
   }
 
+  /// @notice Sets a new request confirmation count.
+  /// @param requestConfirmations_ The new request confirmation count
   function setRequestConfirmations(uint16 requestConfirmations_) external onlyOwner {
     _setRequestConfirmations(requestConfirmations_);
   }
@@ -175,12 +191,16 @@ contract ChainlinkVRFV2Direct is VRFV2WrapperConsumerBase, Ownable, RNGInterface
 
   /* ============ Internal Setters ============ */
 
+  /// @notice Sets a new callback gat limit.
+  /// @param callbackGasLimit_ The new callback gat limit
   function _setCallbackGasLimit(uint32 callbackGasLimit_) internal {
     if (callbackGasLimit_ == 0) revert CallbackGasLimitZero();
     _callbackGasLimit = callbackGasLimit_;
     emit SetCallbackGasLimit(_callbackGasLimit);
   }
 
+  /// @notice Sets a new request confirmation count.
+  /// @param requestConfirmations_ The new request confirmation count
   function _setRequestConfirmations(uint16 requestConfirmations_) internal {
     if (requestConfirmations_ == 0) revert RequestConfirmationsZero();
     _requestConfirmations = requestConfirmations_;
