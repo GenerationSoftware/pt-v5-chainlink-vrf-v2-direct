@@ -3,7 +3,7 @@ pragma solidity ^0.8.19;
 
 import { IRngAuction } from "./interfaces/IRngAuction.sol";
 import { ChainlinkVRFV2Direct } from "./ChainlinkVRFV2Direct.sol";
-import { IERC20 } from "openzeppelin-contracts/interfaces/IERC20.sol";
+import { IERC20 } from "openzeppelin-contracts/contracts/interfaces/IERC20.sol";
 
 /// @notice Thrown if the ChainlinkVRFV2Direct contract is set to the zero address.
 error ChainlinkVRFV2DirectZeroAddress();
