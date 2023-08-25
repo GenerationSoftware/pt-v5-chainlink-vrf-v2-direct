@@ -5,12 +5,14 @@
 [submodule "lib/chainlink"]
 	path = lib/chainlink
 	url = https://github.com/smartcontractkit/chainlink
+	branch = release/2.4.0
 [submodule "lib/pt-v5-rng-contracts"]
 	path = lib/pt-v5-rng-contracts
 	url = https://github.com/GenerationSoftware/pt-v5-rng-contracts
 [submodule "lib/openzeppelin-contracts"]
 	path = lib/openzeppelin-contracts
 	url = https://github.com/OpenZeppelin/openzeppelin-contracts
+	branch = release-v4.9
 [submodule "lib/owner-manager-contracts"]
 	path = lib/owner-manager-contracts
 	url = https://github.com/pooltogether/owner-manager-contracts
