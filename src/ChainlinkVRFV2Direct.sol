@@ -123,8 +123,8 @@ contract ChainlinkVRFV2Direct is VRFV2WrapperConsumerBase, Ownable, RNGInterface
 
   /**
    * @notice Returns the timestamp at which the passed `requestId` was completed.
-   * @param requestId The ID of the request
    * @dev Returns zero if not completed or if the request doesn't exist
+   * @param requestId The ID of the request
    */
   function completedAt(uint32 requestId) external view returns (uint64 completedAtTimestamp) {
     return _requestCompletedAt[requestId];
