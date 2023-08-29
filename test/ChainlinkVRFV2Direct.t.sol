@@ -4,7 +4,7 @@ pragma solidity ^0.8.19;
 import "forge-std/Test.sol";
 
 import { ChainlinkVRFV2Direct } from "../src/ChainlinkVRFV2Direct.sol";
-import { VRFV2WrapperInterface } from "chainlink/interfaces/VRFV2WrapperInterface.sol";
+import { VRFV2Wrapper } from "chainlink/vrf/VRFV2Wrapper.sol";
 import { LinkTokenInterface } from "chainlink/interfaces/LinkTokenInterface.sol";
 
 contract ChainlinkVRFV2DirectTest is Test {
@@ -19,7 +19,7 @@ contract ChainlinkVRFV2DirectTest is Test {
   /// @notice Thrown when the LINK token contract address is set to the zero address.
   error LinkTokenZeroAddress();
 
-  /// @notice Thrown when the VRFV2WrapperInterface address is set to the zero address.
+  /// @notice Thrown when the VRFV2Wrapper address is set to the zero address.
   error VRFV2WrapperZeroAddress();
 
   /// @notice Thrown when the callback gas limit is set to zero.
@@ -85,7 +85,7 @@ contract ChainlinkVRFV2DirectTest is Test {
   function testIsRequestComplete() external {
     useMainnet();
     (uint32 _requestId, uint32 _lockBlock) = requestRandomNumberMainnet();
-    uint256 _wrapperRequestId = VRFV2WrapperInterface(wrapperMainnet).lastRequestId();
+    uint256 _wrapperRequestId = VRFV2Wrapper(wrapperMainnet).lastRequestId();
     assertEq(vrfDirect.isRequestComplete(_requestId), false);
 
     // Fulfill randomness
@@ -99,7 +99,7 @@ contract ChainlinkVRFV2DirectTest is Test {
   function testCompletedAt() external {
     useMainnet();
     (uint32 _requestId, uint32 _lockBlock) = requestRandomNumberMainnet();
-    uint256 _wrapperRequestId = VRFV2WrapperInterface(wrapperMainnet).lastRequestId();
+    uint256 _wrapperRequestId = VRFV2Wrapper(wrapperMainnet).lastRequestId();
     assertEq(vrfDirect.completedAt(_requestId), 0);
 
     // Fulfill randomness
@@ -114,7 +114,7 @@ contract ChainlinkVRFV2DirectTest is Test {
   function testRandomNumber() external {
     useMainnet();
     (uint32 _requestId, uint32 _lockBlock) = requestRandomNumberMainnet();
-    uint256 _wrapperRequestId = VRFV2WrapperInterface(wrapperMainnet).lastRequestId();
+    uint256 _wrapperRequestId = VRFV2Wrapper(wrapperMainnet).lastRequestId();
     assertEq(vrfDirect.randomNumber(_requestId), 0);
 
     // Fulfill randomness
@@ -193,7 +193,7 @@ contract ChainlinkVRFV2DirectTest is Test {
   function testFulfillRandomWords_InvalidRequestId() external {
     useMainnet();
     requestRandomNumberMainnet();
-    uint256 _wrapperRequestId = VRFV2WrapperInterface(wrapperMainnet).lastRequestId();
+    uint256 _wrapperRequestId = VRFV2Wrapper(wrapperMainnet).lastRequestId();
     uint256 _badId = _wrapperRequestId + 1;
 
     vm.startPrank(wrapperMainnet);
@@ -204,6 +204,12 @@ contract ChainlinkVRFV2DirectTest is Test {
     vm.stopPrank();
   }
 
+  /* ============ vrfV2Wrapper() ============ */
+  function testVrfV2Wrapper() external {
+    useMainnet();
+    assertEq(address(vrfDirect.vrfV2Wrapper()), address(wrapperMainnet));
+  }
+
   /* ============ Helpers ============ */
 
   /// @dev Run at the beginning of each fork test
@@ -211,8 +217,7 @@ contract ChainlinkVRFV2DirectTest is Test {
     vm.selectFork(mainnetFork);
     vrfDirect = new ChainlinkVRFV2Direct(
       address(this),
-      LinkTokenInterface(address(linkMainnet)),
-      VRFV2WrapperInterface(address(wrapperMainnet)),
+      VRFV2Wrapper(address(wrapperMainnet)),
       callbackGasLimit,
       requestConfirmations
     );

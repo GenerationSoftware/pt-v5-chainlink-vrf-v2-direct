@@ -10,6 +10,9 @@ import { ERC20Mintable } from "./mock/ERC20Mintable.sol";
 import { IRngAuction } from "../src/interfaces/IRngAuction.sol";
 import { RNGInterface } from "rng-contracts/RNGInterface.sol";
 
+import { VRFV2Wrapper } from "chainlink/vrf/VRFV2Wrapper.sol";
+import { LinkTokenInterface } from "chainlink/interfaces/LinkTokenInterface.sol";
+
 contract ChainlinkVRFV2DirectRngAuctionHelperTest is Test {
 
   /* ============ Variables ============ */
@@ -17,6 +20,11 @@ contract ChainlinkVRFV2DirectRngAuctionHelperTest is Test {
   ChainlinkVRFV2Direct public vrfDirect;
   IRngAuction public rngAuction;
   ERC20Mintable public rngFeeToken;
+
+  uint256 public mainnetFork;
+  
+  address public linkMainnet = 0x514910771AF9Ca656af840dff83E8264EcF986CA;
+  address public wrapperMainnet = 0x5A861794B927983406fCE1D062e00b9368d97Df6;
 
   /* ============ Setup ============ */
   function setUp() public {
@@ -31,6 +39,9 @@ contract ChainlinkVRFV2DirectRngAuctionHelperTest is Test {
     vm.etch(address(vrfDirect), "vrfDirect");
 
     vrfHelper = new ChainlinkVRFV2DirectRngAuctionHelper(vrfDirect, rngAuction);
+
+    // create mainnet fork
+    vm.createFork(vm.rpcUrl("mainnet"), 17_917_752);
   }
 
   /* ============ Tests ============ */
@@ -129,6 +140,32 @@ contract ChainlinkVRFV2DirectRngAuctionHelperTest is Test {
     rngFeeToken.approve(address(vrfHelper), _fee);
     vm.expectRevert("ERC20: transfer amount exceeds balance");
     vrfHelper.transferFeeAndStartRngRequest(address(this));
+  }
+
+  function testForkEstimateRequestFee() public {
+
+    // mainnet fork setup
+    vm.selectFork(mainnetFork);
+    vrfDirect = new ChainlinkVRFV2Direct(
+      address(this),
+      VRFV2Wrapper(address(wrapperMainnet)),
+      1_000_000,
+      3
+    );
+    vrfHelper = new ChainlinkVRFV2DirectRngAuctionHelper(vrfDirect, rngAuction);
+
+    // Get actual fee if called during this TX
+    (address linkActualAddress, uint256 feeActual) = vrfDirect.getRequestFee();
+
+    // test that `estimateRequestFee` returns the same fee as `getRequestFee` when the same gas price is used
+    (address linkAddressEstimateSame, uint256 feeEstimateSame) = vrfHelper.estimateRequestFee(tx.gasprice);
+    assertEq(linkAddressEstimateSame, linkActualAddress);
+    assertEq(feeEstimateSame, feeActual);
+
+    // test that `estimateRequestFee` returns a higher fee than `getRequestFee` when a higher gas price is used
+    (address linkAddressEstimateHigher, uint256 feeEstimateHigher) = vrfHelper.estimateRequestFee(tx.gasprice + 10);
+    assertEq(linkAddressEstimateHigher, linkActualAddress);
+    assertGt(feeEstimateHigher, feeActual);
   }
 
   /* ============ Mocks ============ */

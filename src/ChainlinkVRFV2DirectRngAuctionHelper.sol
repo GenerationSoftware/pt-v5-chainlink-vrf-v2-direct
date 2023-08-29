@@ -4,6 +4,7 @@ pragma solidity ^0.8.19;
 import { IRngAuction } from "./interfaces/IRngAuction.sol";
 import { ChainlinkVRFV2Direct } from "./ChainlinkVRFV2Direct.sol";
 import { IERC20 } from "openzeppelin-contracts/contracts/interfaces/IERC20.sol";
+import { VRFV2Wrapper } from "chainlink/vrf/VRFV2Wrapper.sol";
 
 /// @notice Thrown if the ChainlinkVRFV2Direct contract is set to the zero address.
 error ChainlinkVRFV2DirectZeroAddress();
@@ -53,6 +54,9 @@ contract ChainlinkVRFV2DirectRngAuctionHelper {
      * @param _rewardRecipient Address that will receive the auction reward for starting the RNG request
      * @dev Will revert if the active RNG service of the RngAuction does not match the ChainlinkVRFV2Direct
      * contract address.
+     * @dev To estimate the request fee, use the `estimateRequestFee(...)` function on this contract.
+     * @dev DO NOT USE THE `getRequestFee()` FUNCTION ON THE RNG SERVICE TO PREDICT THE FEE AS IT REQUIRES A
+     * TX GAS PRICE TO CALCULATE THE CORRECT VALUE!
      */
     function transferFeeAndStartRngRequest(address _rewardRecipient) external {
         if (address(rngAuction.getNextRngService()) != address(chainlinkVrfV2Direct)) {
@@ -61,6 +65,19 @@ contract ChainlinkVRFV2DirectRngAuctionHelper {
         (address _feeToken, uint256 _requestFee) = chainlinkVrfV2Direct.getRequestFee();
         IERC20(_feeToken).transferFrom(msg.sender, address(chainlinkVrfV2Direct), _requestFee);
         rngAuction.startRngRequest(_rewardRecipient);
+    }
+
+    /**
+     * @notice Estimates the RNG request fee in LINK based on the expected gas price.
+     * @param _gasPrice The gas price to calculate the request fee for
+     * @return _feeToken The LINK address
+     * @return _requestFee The estimated request fee based on the given gas price
+     * @dev Use this function instead of `RNGInterface.getRequestFee()` when estimating request fees offchain.
+     */
+    function estimateRequestFee(uint256 _gasPrice) external returns (address _feeToken, uint256 _requestFee) {
+        VRFV2Wrapper wrapper = chainlinkVrfV2Direct.vrfV2Wrapper();
+        _feeToken = address(wrapper.LINK());
+        _requestFee = wrapper.estimateRequestPrice(chainlinkVrfV2Direct.getCallbackGasLimit(), _gasPrice);
     }
 
 }
