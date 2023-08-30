@@ -4,7 +4,7 @@ pragma solidity ^0.8.19;
 import { VRFV2WrapperConsumerBase } from "chainlink/vrf/VRFV2WrapperConsumerBase.sol";
 import { Ownable } from "owner-manager/Ownable.sol";
 
-import { VRFV2WrapperInterface } from "chainlink/interfaces/VRFV2WrapperInterface.sol";
+import { VRFV2Wrapper } from "chainlink/vrf/VRFV2Wrapper.sol";
 import { LinkTokenInterface } from "chainlink/interfaces/LinkTokenInterface.sol";
 import { RNGInterface } from "rng-contracts/RNGInterface.sol";
 
@@ -35,7 +35,7 @@ contract ChainlinkVRFV2Direct is VRFV2WrapperConsumerBase, Ownable, RNGInterface
   /// @notice Thrown when the LINK token contract address is set to the zero address.
   error LinkTokenZeroAddress();
 
-  /// @notice Thrown when the VRFV2WrapperInterface address is set to the zero address.
+  /// @notice Thrown when the VRFV2Wrapper address is set to the zero address.
   error VRFV2WrapperZeroAddress();
 
   /// @notice Thrown when the callback gas limit is set to zero.
@@ -63,19 +63,16 @@ contract ChainlinkVRFV2Direct is VRFV2WrapperConsumerBase, Ownable, RNGInterface
   /**
    * @notice Constructor of the contract
    * @param _owner Address of the contract owner
-   * @param _linkToken Address of the LINK token contract
    * @param _vrfV2Wrapper Address of the VRF V2 Wrapper
    * @param callbackGasLimit_ Gas limit for the fulfillRandomWords callback
    * @param requestConfirmations_ The number of confirmations to wait before fulfilling the request
    */
   constructor(
     address _owner,
-    LinkTokenInterface _linkToken,
-    VRFV2WrapperInterface _vrfV2Wrapper,
+    VRFV2Wrapper _vrfV2Wrapper,
     uint32 callbackGasLimit_,
     uint16 requestConfirmations_
-  ) VRFV2WrapperConsumerBase(address(_linkToken), address(_vrfV2Wrapper)) Ownable(_owner) {
-    if (address(_linkToken) == address(0)) revert LinkTokenZeroAddress();
+  ) VRFV2WrapperConsumerBase(address(_vrfV2Wrapper.LINK()), address(_vrfV2Wrapper)) Ownable(_owner) {
     if (address(_vrfV2Wrapper) == address(0)) revert VRFV2WrapperZeroAddress();
     _setCallbackGasLimit(callbackGasLimit_);
     _setRequestConfirmations(requestConfirmations_);
@@ -126,8 +123,8 @@ contract ChainlinkVRFV2Direct is VRFV2WrapperConsumerBase, Ownable, RNGInterface
 
   /**
    * @notice Returns the timestamp at which the passed `requestId` was completed.
-   * @param requestId The ID of the request
    * @dev Returns zero if not completed or if the request doesn't exist
+   * @param requestId The ID of the request
    */
   function completedAt(uint32 requestId) external view returns (uint64 completedAtTimestamp) {
     return _requestCompletedAt[requestId];
@@ -153,6 +150,12 @@ contract ChainlinkVRFV2Direct is VRFV2WrapperConsumerBase, Ownable, RNGInterface
   /// @return The current request confirmation count
   function getRequestConfirmations() external view returns (uint16) {
     return _requestConfirmations;
+  }
+
+  /// @notice Returns the VRF V2 Wrapper contract that this contract uses.
+  /// @return The VRFV2Wrapper contract
+  function vrfV2Wrapper() external view returns (VRFV2Wrapper) {
+    return VRFV2Wrapper(address(VRF_V2_WRAPPER));
   }
 
   /* ============ External Setters ============ */
