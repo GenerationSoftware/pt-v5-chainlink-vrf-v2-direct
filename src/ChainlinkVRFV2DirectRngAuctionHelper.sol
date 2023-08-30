@@ -73,7 +73,7 @@ contract ChainlinkVRFV2DirectRngAuctionHelper {
      * @return _feeToken The LINK address
      * @return _requestFee The estimated request fee based on the given gas price
      */
-    function estimateRequestFee(uint256 _gasPrice) external returns (address _feeToken, uint256 _requestFee) {
+    function estimateRequestFee(uint256 _gasPrice) external view returns (address _feeToken, uint256 _requestFee) {
         VRFV2Wrapper wrapper = chainlinkVrfV2Direct.vrfV2Wrapper();
         _feeToken = address(wrapper.LINK());
         _requestFee = wrapper.estimateRequestPrice(chainlinkVrfV2Direct.getCallbackGasLimit(), _gasPrice);
