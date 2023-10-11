@@ -8,6 +8,12 @@ import { VRFV2Wrapper } from "chainlink/vrf/VRFV2Wrapper.sol";
 import { LinkTokenInterface } from "chainlink/interfaces/LinkTokenInterface.sol";
 import { RNGInterface } from "rng-contracts/RNGInterface.sol";
 
+/**
+ * @title PoolTogether V5 ChainlinkVRFV2Direct
+ * @author G9 Software Inc.
+ * @notice This is an RNG service contract that interfaces with the Chainlink VRF V2
+ * service to trigger direct-funded RNG requests.
+ */
 contract ChainlinkVRFV2Direct is VRFV2WrapperConsumerBase, Ownable, RNGInterface {
 
   /* ============ Global Variables ============ */
@@ -27,7 +33,9 @@ contract ChainlinkVRFV2Direct is VRFV2WrapperConsumerBase, Ownable, RNGInterface
   /// @notice A list of random number completion timestamps mapped by request id
   mapping(uint32 => uint64) internal _requestCompletedAt;
 
-  /// @notice A mapping from Chainlink request ids to internal request ids
+  /// @notice A *temporary* mapping from Chainlink request ids to internal request ids
+  /// @dev Mapping entries are only stored until the request is fulfilled and then they 
+  /// are deleted to save gas.
   mapping(uint256 => uint32) internal _chainlinkRequestIds;
 
   /* ============ Custom Errors ============ */
@@ -86,19 +94,19 @@ contract ChainlinkVRFV2Direct is VRFV2WrapperConsumerBase, Ownable, RNGInterface
     returns (uint32 requestId, uint32 lockBlock)
   {
     uint256 _vrfRequestId = requestRandomness(
-      _callbackGasLimit, // TODO: make callback gas updateable or configurable by caller
+      _callbackGasLimit,
       _requestConfirmations,
       1 // num words
     );
 
-    _requestCounter = _requestCounter + 1;
+    requestId = _requestCounter + 1;
+    _requestCounter = requestId;
 
-    requestId = _requestCounter;
-    _chainlinkRequestIds[_vrfRequestId] = _requestCounter;
+    _chainlinkRequestIds[_vrfRequestId] = requestId;
 
     lockBlock = uint32(block.number);
 
-    emit RandomNumberRequested(_requestCounter, msg.sender);
+    emit RandomNumberRequested(requestId, msg.sender);
   }
 
   /// @inheritdoc RNGInterface
@@ -186,6 +194,9 @@ contract ChainlinkVRFV2Direct is VRFV2WrapperConsumerBase, Ownable, RNGInterface
   {
     uint32 _internalRequestId = _chainlinkRequestIds[_vrfRequestId];
     if (_internalRequestId == 0) revert InvalidVrfRequestId(_vrfRequestId);
+
+    /// @dev Delete chainlink request ID mapping since we no longer need it
+    delete _chainlinkRequestIds[_vrfRequestId];
 
     uint256 _randomNumber = _randomWords[0];
     _randomNumbers[_internalRequestId] = _randomNumber;

@@ -22,7 +22,7 @@ error RngServiceNotActive(address chainlinkVrfV2Direct, address activeRngService
 
 /**
  * @title PoolTogether V5 ChainlinkVRFV2DirectRngAuctionHelper
- * @author Generation Software Team
+ * @author G9 Software Inc.
  * @notice This is a helper contract to provide clients a simplified interface to interact
  * with the RNGAuction if a fee needs to be transferred before starting the RNG request.
  */
