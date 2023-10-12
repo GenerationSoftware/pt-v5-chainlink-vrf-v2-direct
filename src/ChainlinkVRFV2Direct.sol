@@ -33,9 +33,7 @@ contract ChainlinkVRFV2Direct is VRFV2WrapperConsumerBase, Ownable, RNGInterface
   /// @notice A list of random number completion timestamps mapped by request id
   mapping(uint32 => uint64) internal _requestCompletedAt;
 
-  /// @notice A *temporary* mapping from Chainlink request ids to internal request ids
-  /// @dev Mapping entries are only stored until the request is fulfilled and then they 
-  /// are deleted to save gas.
+  /// @notice A mapping from Chainlink request ids to internal request ids
   mapping(uint256 => uint32) internal _chainlinkRequestIds;
 
   /* ============ Custom Errors ============ */
@@ -194,9 +192,6 @@ contract ChainlinkVRFV2Direct is VRFV2WrapperConsumerBase, Ownable, RNGInterface
   {
     uint32 _internalRequestId = _chainlinkRequestIds[_vrfRequestId];
     if (_internalRequestId == 0) revert InvalidVrfRequestId(_vrfRequestId);
-
-    /// @dev Delete chainlink request ID mapping since we no longer need it
-    delete _chainlinkRequestIds[_vrfRequestId];
 
     uint256 _randomNumber = _randomWords[0];
     _randomNumbers[_internalRequestId] = _randomNumber;
