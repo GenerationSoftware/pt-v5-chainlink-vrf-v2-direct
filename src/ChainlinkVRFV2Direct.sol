@@ -89,6 +89,7 @@ contract ChainlinkVRFV2Direct is VRFV2WrapperConsumerBase, Ownable, RNGInterface
   /// @inheritdoc RNGInterface
   function requestRandomNumber()
     external
+    payable
     returns (uint32 requestId, uint32 lockBlock)
   {
     uint256 _vrfRequestId = requestRandomness(
